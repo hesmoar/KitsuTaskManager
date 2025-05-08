@@ -8,6 +8,7 @@ from PySide6.QtWidgets import (
     QTabWidget, QTableWidget, QTableWidgetItem, QHeaderView, QFormLayout, QGridLayout, 
     QMessageBox, QListWidget, QListWidgetItem
 )
+from PySide6.QtGui import QIcon, QPixmap, QFont, QColor, QPalette
 from PySide6.QtCore import Qt
 from kitsu_auth import connect_to_kitsu, set_env_variables
 from kitsu_utils import get_user_projects, get_user_tasks_for_project
@@ -77,32 +78,60 @@ class TaskManager(QMainWindow):
     def apply_stylesheet(self):
          self.setStyleSheet("""             
             QMainWindow {
-                background-color: #2E2E2E;
-            }
-            QLabel {
-                color: #FFFFFF;
-                font-size: 16px;
-            }
-            title_label {
-                font-size: 35px;
-                font-weight: bold;
-            }
-            QLineEdit {
-                background-color: #3E3E3E;
-                color: #FFFFFF;
-                border: 1px solid #555555;
-                padding: 5px;
-            }
-            QPushButton {
-                background-color: #007ACC;
-                color: #FFFFFF;
-                border-radius: 5px;
-                padding: 10px;
-            }
-            QPushButton:hover {
-                background-color: #005FA3;
-            }
-            """)
+            background-color: #1f1f1f;
+        }
+
+        QLabel {
+            color: #f0f0f0;
+            font-size: 14px;
+        }
+
+        QGroupBox {
+            color: #f0f0f0;
+            font-size: 16px;
+            font-weight: bold;
+            border: 1px solid #444;
+            border-radius: 8px;
+            margin-top: 10px;
+        }
+
+        QGroupBox:title {
+            subcontrol-origin: margin;
+            left: 10px;
+            padding: 0 3px 0 3px;
+        }
+
+        QLineEdit, QTextEdit {
+            background-color: #2c2c2c;
+            color: #fff;
+            border: 1px solid #555;
+            padding: 6px;
+            border-radius: 4px;
+        }
+
+        QPushButton {
+            background-color: #007acc;
+            color: #ffffff;
+            font-weight: bold;
+            border-radius: 5px;
+            padding: 8px 12px;
+        }
+
+        QPushButton:hover {
+            background-color: #005fa3;
+        }
+
+        QListWidget {
+            background-color: #2a2a2a;
+            color: white;
+            border: 1px solid #444;
+        }
+
+        QListWidget::item:selected {
+            background-color: #007acc;
+            color: white;
+        }
+    """)
          
 
     def get_selections(self):
@@ -206,6 +235,8 @@ class TaskManager(QMainWindow):
 
         main_layout.addLayout(first_level)
         main_layout.addLayout(second_level)
+        
+        self.apply_stylesheet()
 
 
     def add_task_to_list(self, task_type_name, due_date, status, entity_name):
@@ -270,6 +301,7 @@ class TaskManager(QMainWindow):
 
 def run_gui():
     app = QApplication(sys.argv)
+    app.setFont(QFont("Segoe UI", 10))
     window = TaskManager()
     window.show()
     sys.exit(app.exec())
