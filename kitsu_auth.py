@@ -1,5 +1,6 @@
 import gazu
 import os
+import keyring
 
 #kitsu_url = os.getenv("KITSU_URL")
 #kitsu_email = os.getenv("KITSU_EMAIL")
@@ -15,7 +16,11 @@ def set_env_variables(kitsu_url, kitsu_email, kitsu_password):
     print(f"KITSU_EMAIL: {kitsu_email}")
     print(f"KITSU_PASSWORD: {kitsu_password}")
 
-
+def save_credentials(kitsu_url, kitsu_email, kitsu_password):
+    keyring.set_password("kitsu", "password", kitsu_password)
+    keyring.set_password("kitsu", "email", kitsu_email)
+    keyring.set_password("kitsu", "url", kitsu_url)
+    print("Credentials saved to securely")
 #if kitsu_url and kitsu_url.startswith("https://"):
 #    print("Warning your KITSU_URL is using https instead of http")
 # Login

@@ -6,11 +6,11 @@ from PySide6.QtWidgets import (
     QCheckBox, QRadioButton, QButtonGroup, QFileDialog, QHBoxLayout, QGroupBox, 
     QFrame, QSpacerItem, QSizePolicy, QComboBox, QTextEdit, QInputDialog, QLineEdit, 
     QTabWidget, QTableWidget, QTableWidgetItem, QHeaderView, QFormLayout, QGridLayout, 
-    QMessageBox, QListWidget, QListWidgetItem
+    QMessageBox, QListWidget, QListWidgetItem, QMenu
 )
 from PySide6.QtGui import QIcon, QPixmap, QFont, QColor, QPalette
 from PySide6.QtCore import Qt
-from kitsu_auth import connect_to_kitsu, set_env_variables
+from kitsu_auth import connect_to_kitsu, set_env_variables, save_credentials
 from kitsu_utils import get_user_projects, get_user_tasks_for_project
 
 
@@ -151,6 +151,13 @@ class TaskManager(QMainWindow):
             self.selections["kitsu_username"],
             self.selections["kitsu_password"]
         )
+        
+        save_credentials(
+            self.selections["kitsu_url"],
+            self.selections["kitsu_username"],
+            self.selections["kitsu_password"]
+        )
+
         connect_to_kitsu(
             self.selections["kitsu_url"],
             self.selections["kitsu_username"],
@@ -297,6 +304,25 @@ class TaskManager(QMainWindow):
             due_date = task["due_date"]
             status = task["status"]
             self.add_task_to_list(task_name, due_date, status, selected_entity)
+    
+    def contextMenuEvent(self, event):
+        if self.tasks_list.underMouse():
+            menu = QMenu(self)
+
+            action_view_details = menu.addAction("View Details")
+
+            action = menu.exec_(self.mapToGlobal(event.pos()))
+
+            if action == action_view_details:
+                self.view_task_details()
+    
+    def view_task_details(self):
+        selected_items = self.tasks_list.currentItem()
+        if selected_items:
+            selected_task = selected_items[0].text()
+            QMessageBox.information(self, "Task Details", f"Details for task: {selected_task}")
+
+
 
 
 def run_gui():
