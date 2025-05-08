@@ -173,6 +173,7 @@ class TaskManager(QMainWindow):
 
         self.entity_list = QListWidget(self)
         self.entity_list.addItems(["Entities"])
+        self.entity_list.itemClicked.connect(self.on_entity_selected)
         entity_layout.addWidget(self.entity_list)
 
         right_column.addWidget(entity_group)
@@ -240,18 +241,31 @@ class TaskManager(QMainWindow):
 
     def on_project_selected(self, item):
         selected_project = item.text()
-        entities, tasks = get_user_tasks_for_project(self.selections["kitsu_username"], selected_project)
+        entities, self.task_details = get_user_tasks_for_project(self.selections["kitsu_username"], selected_project)
         self.entity_list.clear()
         self.tasks_list.clear()
 
         self.entity_list.addItems(entities)
 
-        for task in tasks:
-            entity_name = task["entity_name"]
+
+
+    def on_entity_selected(self, item):
+        selected_entity = item.text()
+        # Do something with the selected entity
+        print(f"Selected entity: {selected_entity}")
+
+        filtered_tasks = [
+            task for task in self.task_details if task["entity_name"] == selected_entity
+
+        ]
+
+        self.tasks_list.clear()
+
+        for task in filtered_tasks:
             task_name = task["task_type_name"]
             due_date = task["due_date"]
             status = task["status"]
-            self.add_task_to_list(task_name, due_date, status, entity_name)
+            self.add_task_to_list(task_name, due_date, status, selected_entity)
 
 
 def run_gui():
