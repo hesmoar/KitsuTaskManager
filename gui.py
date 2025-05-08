@@ -6,7 +6,7 @@ from PySide6.QtWidgets import (
     QCheckBox, QRadioButton, QButtonGroup, QFileDialog, QHBoxLayout, QGroupBox, 
     QFrame, QSpacerItem, QSizePolicy, QComboBox, QTextEdit, QInputDialog, QLineEdit, 
     QTabWidget, QTableWidget, QTableWidgetItem, QHeaderView, QFormLayout, QGridLayout, 
-    QMessageBox, QListWidget
+    QMessageBox, QListWidget, QListWidgetItem
 )
 from PySide6.QtCore import Qt
 from kitsu_auth import connect_to_kitsu, set_env_variables
@@ -131,6 +131,9 @@ class TaskManager(QMainWindow):
         self.update_ui_with_kitsu()
     
     def update_ui_with_kitsu(self):
+
+        self.setGeometry(100, 100, 800, 600)
+
         central_widget = self.centralWidget()
         main_layout = central_widget.layout()
 
@@ -204,7 +207,34 @@ class TaskManager(QMainWindow):
         main_layout.addLayout(second_level)
 
 
+    def add_task_to_list(self, task_type_name, due_date, status, entity_name):
+        # Create a custom widget for the task
+        task_widget = QWidget()
+        task_layout = QHBoxLayout(task_widget)
 
+
+        # Add task details (name and date)
+        text_layout = QVBoxLayout()
+        task_entity_name_label = QLabel(entity_name)
+        task_entity_name_label.setStyleSheet("color: black; font-weight: bold;")
+        task_name_label = QLabel(task_type_name)
+        task_name_label.setStyleSheet("color: black; font-weight: bold;")
+        task_date_label = QLabel(due_date)
+        task_date_label.setStyleSheet("color: black; font-size: 12px;")
+        task_status_label = QLabel(status)
+        task_status_label.setStyleSheet("color: black; font-size: 12px;")
+        text_layout.addWidget(task_entity_name_label)
+        text_layout.addWidget(task_name_label)
+        text_layout.addWidget(task_date_label)
+        text_layout.addWidget(task_status_label)
+
+        task_layout.addLayout(text_layout)
+
+        # Add the custom widget to the QListWidget
+        task_item = QListWidgetItem(self.tasks_list)
+        task_item.setSizeHint(task_widget.sizeHint())
+        self.tasks_list.addItem(task_item)
+        self.tasks_list.setItemWidget(task_item, task_widget)
     
 
 
@@ -216,7 +246,12 @@ class TaskManager(QMainWindow):
 
         self.entity_list.addItems(entities)
 
-        self.tasks_list.addItems(tasks)
+        for task in tasks:
+            entity_name = task["entity_name"]
+            task_name = task["task_type_name"]
+            due_date = task["due_date"]
+            status = task["status"]
+            self.add_task_to_list(task_name, due_date, status, entity_name)
 
 
 def run_gui():
