@@ -145,18 +145,18 @@ class TaskManager(QMainWindow):
     def start_process(self):
         self.get_selections()
         print("Starting process with selections:")
-        print(self.selections)
-        set_env_variables(
-            self.selections["kitsu_url"],
-            self.selections["kitsu_username"],
-            self.selections["kitsu_password"]
-        )
-        
-        save_credentials(
-            self.selections["kitsu_url"],
-            self.selections["kitsu_username"],
-            self.selections["kitsu_password"]
-        )
+        #print(self.selections)
+        #set_env_variables(
+        #    self.selections["kitsu_url"],
+        #    self.selections["kitsu_username"],
+        #    self.selections["kitsu_password"]
+        #)
+
+        #save_credentials(
+        #    self.selections["kitsu_url"],
+        #    self.selections["kitsu_username"],
+        #    self.selections["kitsu_password"]
+        #)
 
         connect_to_kitsu(
             self.selections["kitsu_url"],
@@ -177,6 +177,18 @@ class TaskManager(QMainWindow):
             widget = main_layout.itemAt(i).widget()
             if widget:
                 widget.deleteLater()
+        
+        header_level = QHBoxLayout()
+
+        self.header_label = QLabel("Welcome", self)
+        self.header_label.setAlignment(Qt.AlignCenter)
+        self.header_label.setStyleSheet("font-size: 24px; font-weight: bold;")
+        header_level.addWidget(self.header_label)
+
+        self.username_label = QLabel(self.selections["kitsu_username"], self)
+        self.username_label.setAlignment(Qt.AlignCenter)
+        self.username_label.setStyleSheet("font-size: 24px; font-weight: bold;")
+        header_level.addWidget(self.username_label)
 
         first_level = QHBoxLayout()
         # Left Column
@@ -240,6 +252,8 @@ class TaskManager(QMainWindow):
 
 
 
+        main_layout.addLayout(header_level)
+        main_layout.addSpacerItem(QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding))
         main_layout.addLayout(first_level)
         main_layout.addLayout(second_level)
         

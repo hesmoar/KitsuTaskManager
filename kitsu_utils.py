@@ -27,11 +27,17 @@ def get_user_tasks_for_project(user_email, project_name):
                 "entity_name": task["entity_name"],
                 "task_type_name": task["task_type_name"],
                 "due_date": task["due_date"],
-                "status": task["task_status_short_name"]
+                "status": task["task_status_short_name"],
+                "entity_type_name": task["entity_type_name"]
             })
 
 
     return entity_names, task_details
+# FIXME: This should get the thumbnail from the task or asset and download it so it can be used in the GUI
+def get_preview_thumbnail():
+    entity_names, entity_list = get_user_tasks_for_project(user_email, project_name)
+
+
 
 """
 entity_name - Group by this second
