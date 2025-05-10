@@ -1,6 +1,7 @@
 import sys
 import os
 import webbrowser
+import subprocess
 
 from PySide6.QtWidgets import (
     QApplication, QMainWindow, QWidget, QVBoxLayout, QLabel, QPushButton,
@@ -99,6 +100,18 @@ class TaskManager(QMainWindow):
         }
         QToolButton:hover {
             background-color: #007acc;
+        }
+
+        QMenu {
+            background-color: #2c2c2c;
+            color: #f0f0f0;
+            border: 1px solid #444;
+            padding: 6px;
+            border-radius: 4px;
+        }
+        QMenu::item:selected {
+            background-color: #007acc;
+            color: white;
         }
     """)
          
@@ -431,14 +444,21 @@ class TaskManager(QMainWindow):
             menu = QMenu(self)
 
             action_view_details = menu.addAction("View Details")
-            action_launch_software = menu.addAction("Launch Software")
+            action_launch_software = menu.addMenu("Launch Software")
+            action_launch_resolve = action_launch_software.addAction("Launch Resolve")
+            action_launch_krita = action_launch_software.addAction("Launch Krita")
+            action_launch_software.addSeparator()
 
             action = menu.exec(self.mapToGlobal(event.pos()))
 
             if action == action_view_details:
                 self.view_task_details()
-            elif action == action_launch_software:
-                self.launch_software()
+            elif action == action_launch_resolve:
+                from software_utils import launch_resolve
+                launch_resolve()
+            elif action == action_launch_krita:
+                from software_utils import launch_krita
+                launch_krita()
     
     def view_task_details(self):
         selected_items = self.tasks_list.currentItem()
@@ -446,8 +466,7 @@ class TaskManager(QMainWindow):
             selected_task = selected_items[0].text()
             QMessageBox.information(self, "Task Details", f"Details for task: {selected_task}")
     
-    def launch_software(self):
-        print("Launching software...")
+
 
 
 
