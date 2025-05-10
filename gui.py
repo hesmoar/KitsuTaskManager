@@ -197,6 +197,7 @@ class TaskManager(QMainWindow):
     def logout(self):
         clear_credentials()
         self.selections = {}
+        clean_up_thumbnails()
         QMessageBox.information(self, "Logout", "You have been logged out.")
         
         self.setGeometry(50, 50, 400, 300)
