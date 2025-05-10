@@ -431,17 +431,23 @@ class TaskManager(QMainWindow):
             menu = QMenu(self)
 
             action_view_details = menu.addAction("View Details")
+            action_launch_software = menu.addAction("Launch Software")
 
-            action = menu.exec_(self.mapToGlobal(event.pos()))
+            action = menu.exec(self.mapToGlobal(event.pos()))
 
             if action == action_view_details:
                 self.view_task_details()
+            elif action == action_launch_software:
+                self.launch_software()
     
     def view_task_details(self):
         selected_items = self.tasks_list.currentItem()
         if selected_items:
             selected_task = selected_items[0].text()
             QMessageBox.information(self, "Task Details", f"Details for task: {selected_task}")
+    
+    def launch_software(self):
+        print("Launching software...")
 
 
 
