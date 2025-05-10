@@ -1,5 +1,8 @@
 import gazu
 import pprint
+import os
+import tempfile
+import shutil
 
 
 def get_user_projects():
@@ -28,14 +31,35 @@ def get_user_tasks_for_project(user_email, project_name):
                 "task_type_name": task["task_type_name"],
                 "due_date": task["due_date"],
                 "status": task["task_status_short_name"],
-                "entity_type_name": task["entity_type_name"]
+                "entity_type_name": task["entity_type_name"],
+                "task_id": task["id"]
             })
 
 
     return entity_names, task_details
 # FIXME: This should get the thumbnail from the task or asset and download it so it can be used in the GUI
-#def get_preview_thumbnail():
-#    entity_names, entity_list = get_user_tasks_for_project(user_email, project_name)
+def get_preview_thumbnail(task_id):
+    try:
+        temp_dir = os.path.join(tempfile.gettempdir(), "KitsuTaskManagerThumbnails")
+        os.makedirs(temp_dir, exist_ok=True)
+
+        preview_files = gazu.files.get_all_preview_files_for_task(task_id)
+        if preview_files:
+            preview_thumbnail_path = os.path.join(temp_dir, f"{task_id}")#_preview.png")
+            gazu.files.download_preview_file_cover(preview_files[0]["id"], preview_thumbnail_path)
+            return preview_thumbnail_path
+        else:
+            print(f"No preview files found for task ID: {task_id}")
+            return None
+    except Exception as e:
+        print(f"Error getting preview thumbnail for task ID {task_id}: {e}")
+        return None
+
+def clean_up_thumbnails():
+    temp_dir = os.path.join(tempfile.gettempdir(), "KitsuTaskManagerThumbnails")
+    if os.path.exists(temp_dir):
+        shutil.rmtree(temp_dir)
+
 
 
 

@@ -6,12 +6,12 @@ from PySide6.QtWidgets import (
     QCheckBox, QRadioButton, QButtonGroup, QFileDialog, QHBoxLayout, QGroupBox, 
     QFrame, QSpacerItem, QSizePolicy, QComboBox, QTextEdit, QInputDialog, QLineEdit, 
     QTabWidget, QTableWidget, QTableWidgetItem, QHeaderView, QFormLayout, QGridLayout, 
-    QMessageBox, QListWidget, QListWidgetItem, QMenu, QToolButton
+    QMessageBox, QListWidget, QListWidgetItem, QMenu, QToolButton, QSizeGrip
 )
 from PySide6.QtGui import QIcon, QPixmap, QFont, QColor, QPalette
-from PySide6.QtCore import Qt
+from PySide6.QtCore import Qt, QSize
 from kitsu_auth import connect_to_kitsu, set_env_variables, save_credentials, load_credentials, clear_credentials
-from kitsu_utils import get_user_projects, get_user_tasks_for_project
+from kitsu_utils import get_user_projects, get_user_tasks_for_project, get_preview_thumbnail, clean_up_thumbnails
 
 
 class TaskManager(QMainWindow):
@@ -25,7 +25,6 @@ class TaskManager(QMainWindow):
         stored_credentials = load_credentials()
         if stored_credentials:
             self.selections = stored_credentials
-            print(f"Loaded credentials: {stored_credentials}")
             self.auto_login()
             if self.auto_login():
                 return
@@ -197,6 +196,7 @@ class TaskManager(QMainWindow):
 
     def logout(self):
         clear_credentials()
+        self.selections = {}
         QMessageBox.information(self, "Logout", "You have been logged out.")
         
         self.setGeometry(50, 50, 400, 300)
@@ -329,19 +329,27 @@ class TaskManager(QMainWindow):
     def view_settings(self):
         QMessageBox.information(self, "Settings", "Opening settings...")
 
-    #def logout(self):
-    #    # Perform logout actions here
-    #    QMessageBox.information(self, "Logout", "Logging out...")
-
-
-    def add_task_to_list(self, task_type_name, due_date, status, entity_name):
+    def add_task_to_list(self, task_type_name, due_date, status, entity_name, id):
         # Create a custom widget for the task
         task_widget = QWidget()
         task_layout = QHBoxLayout(task_widget)
 
 
         # Add task details (name and date)
-        text_layout = QVBoxLayout()
+        text_layout_right = QVBoxLayout()
+        text_layout_left = QVBoxLayout()
+
+        thumbnail_path = get_preview_thumbnail(id)
+        task_preview_icon_button = QToolButton(self)
+        if thumbnail_path:
+            pixmap = QPixmap(thumbnail_path).scaled(100, 100, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+            task_preview_icon_button.setIcon(QIcon(pixmap))
+        else:
+            task_preview_icon_button.setIcon(QIcon(r"D:\HecberryStuff\Dev\photo.png"))
+        
+        task_preview_icon_button.setIconSize(QSize(100, 100))
+        task_preview_icon_button.setFixedSize(100, 100)
+
         task_entity_name_label = QLabel(entity_name)
         task_entity_name_label.setStyleSheet("font-weight: bold;")
         task_name_label = QLabel(task_type_name)
@@ -350,12 +358,14 @@ class TaskManager(QMainWindow):
         task_date_label.setStyleSheet("font-size: 12px;")
         task_status_label = QLabel(status)
         task_status_label.setStyleSheet("font-size: 12px;")
-        text_layout.addWidget(task_entity_name_label)
-        text_layout.addWidget(task_name_label)
-        text_layout.addWidget(task_date_label)
-        text_layout.addWidget(task_status_label)
+        text_layout_left.addWidget(task_preview_icon_button)
+        text_layout_right.addWidget(task_entity_name_label)
+        text_layout_right.addWidget(task_name_label)
+        text_layout_right.addWidget(task_date_label)
+        text_layout_right.addWidget(task_status_label)
 
-        task_layout.addLayout(text_layout)
+        task_layout.addLayout(text_layout_left)
+        task_layout.addLayout(text_layout_right)
 
         # Add the custom widget to the QListWidget
         task_item = QListWidgetItem(self.tasks_list)
@@ -391,7 +401,8 @@ class TaskManager(QMainWindow):
             task_name = task["task_type_name"]
             due_date = task["due_date"]
             status = task["status"]
-            self.add_task_to_list(task_name, due_date, status, selected_entity)
+            id = task["task_id"]
+            self.add_task_to_list(task_name, due_date, status, selected_entity, id)
     
     def contextMenuEvent(self, event):
         if self.tasks_list.underMouse():
