@@ -1,4 +1,6 @@
 import subprocess
+import os
+
 
 def launch_resolve():
     print("Launching DaVinci Resolve...")

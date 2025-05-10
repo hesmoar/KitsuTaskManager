@@ -12,7 +12,7 @@ from PySide6.QtWidgets import (
 )
 from PySide6.QtGui import QIcon, QPixmap, QFont, QColor, QPalette
 from PySide6.QtCore import Qt, QSize
-from kitsu_auth import connect_to_kitsu, set_env_variables, save_credentials, load_credentials, clear_credentials
+from kitsu_auth import connect_to_kitsu, load_credentials, clear_credentials
 from kitsu_utils import get_user_projects, get_user_tasks_for_project, get_preview_thumbnail, clean_up_thumbnails, get_user_avatar
 
 
@@ -207,6 +207,29 @@ class TaskManager(QMainWindow):
         except Exception as e:
             QMessageBox.warning(self, "Login Failed", f"Login failed: {str(e)}")
 
+    def detect_installed_software(self):
+        self.software_availability = {
+            "Resolve": self.is_software_installed("Resolve.exe"),
+            "Krita": self.is_software_installed("krita.exe"),
+            "Nuke": self.is_software_installed("Nuke.exe"),
+        }
+
+    def is_software_installed(self, executable_name):
+        for path in os.environ["PATH"].split(os.pathsep):
+            if os.path.exists(os.path.join(path, executable_name)):
+                return True
+
+        common_paths = [
+            r"C:\Program Files",
+            r"C:\Program Files (x86)",
+            r"C:\Users\%USERNAME%\AppData\Local\Programs",
+        ]
+        for base_path in common_paths:
+            for root, dirs, files in os.walk(base_path):
+                if executable_name in files:
+                    print(f"Found {executable_name} in {root}")
+                    return True
+        return False
 
     def logout(self):
         clear_credentials()
@@ -349,6 +372,7 @@ class TaskManager(QMainWindow):
         main_layout.addLayout(second_level)
         
         self.apply_stylesheet()
+        self.detect_installed_software()
 
     def view_profile(self):
         try:
@@ -447,7 +471,12 @@ class TaskManager(QMainWindow):
             action_launch_software = menu.addMenu("Launch Software")
             action_launch_resolve = action_launch_software.addAction("Launch Resolve")
             action_launch_krita = action_launch_software.addAction("Launch Krita")
+            action_launch_nuke = action_launch_software.addAction("Launch Nuke")
             action_launch_software.addSeparator()
+
+            action_launch_resolve.setEnabled(self.software_availability.get("Resolve", False))
+            action_launch_krita.setEnabled(self.software_availability.get("Krita", False))
+            action_launch_nuke.setEnabled(self.software_availability.get("Nuke", False))
 
             action = menu.exec(self.mapToGlobal(event.pos()))
 
