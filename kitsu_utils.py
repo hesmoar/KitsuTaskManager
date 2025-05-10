@@ -55,6 +55,23 @@ def get_preview_thumbnail(task_id):
         print(f"Error getting preview thumbnail for task ID {task_id}: {e}")
         return None
 
+def get_user_avatar(user_email):
+    try:
+        temp_dir = os.path.join(tempfile.gettempdir(), "KitsuTaskManagerThumbnails")
+        os.makedirs(temp_dir, exist_ok=True)
+        person = gazu.person.get_person_by_email(user_email)
+        if person:
+            person_avatar_path = os.path.join(temp_dir, f"{person["first_name"]}")
+            gazu.files.download_person_avatar(person, person_avatar_path)
+            return person_avatar_path
+        else:
+            print(f"No person found with email: {user_email}")
+            return None
+    except Exception as e:
+        print(f"Error getting user avatar for email {user_email}: {e}")
+        return None
+
+
 def clean_up_thumbnails():
     temp_dir = os.path.join(tempfile.gettempdir(), "KitsuTaskManagerThumbnails")
     if os.path.exists(temp_dir):

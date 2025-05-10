@@ -11,7 +11,7 @@ from PySide6.QtWidgets import (
 from PySide6.QtGui import QIcon, QPixmap, QFont, QColor, QPalette
 from PySide6.QtCore import Qt, QSize
 from kitsu_auth import connect_to_kitsu, set_env_variables, save_credentials, load_credentials, clear_credentials
-from kitsu_utils import get_user_projects, get_user_tasks_for_project, get_preview_thumbnail, clean_up_thumbnails
+from kitsu_utils import get_user_projects, get_user_tasks_for_project, get_preview_thumbnail, clean_up_thumbnails, get_user_avatar
 
 
 class TaskManager(QMainWindow):
@@ -235,14 +235,23 @@ class TaskManager(QMainWindow):
         header_right_column = QVBoxLayout()
         header_right_column.setAlignment(Qt.AlignRight)
 
-
+        avatar_path = get_user_avatar(self.selections["username"])
         self.username_button = QToolButton(self)
-        self.username_button.setText(self.selections["username"])
-        self.username_button.setIcon(QIcon(r"D:\HecberryStuff\Dev\photo.png"))
-        self.username_button.setToolButtonStyle(Qt.ToolButtonTextBesideIcon)
+
+        if avatar_path:
+            pixmap = QPixmap(avatar_path).scaled(100, 100, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+            self.username_button.setIcon(QIcon(pixmap))
+            #self.username_button.setText(self.selections["username"])
+            #self.username_button.setToolButtonStyle(Qt.ToolButtonTextBesideIcon)
+        else:
+            self.username_button.setIcon(QIcon(r"D:\HecberryStuff\Dev\photo.png"))
+        self.username_button.setIconSize(QSize(50, 50))
+        #self.username_button.setFixedSize(150, 150)
+
 
         menu = QMenu(self)
-        menu.addAction("Profile", self.view_profile)
+        menu.addAction(self.selections["username"], self.view_profile)
+        #menu.addAction("Profile", self.view_profile)
         menu.addAction("Settings", self.view_settings)
         menu.addAction("Logout", self.logout)
 
