@@ -1,5 +1,6 @@
 import sys
 import os
+import webbrowser
 
 from PySide6.QtWidgets import (
     QApplication, QMainWindow, QWidget, QVBoxLayout, QLabel, QPushButton,
@@ -206,6 +207,7 @@ class TaskManager(QMainWindow):
 
     def update_ui_with_kitsu(self):
 
+        # Main Window
         self.setGeometry(100, 100, 800, 600)
 
         central_widget = QWidget(self)
@@ -220,14 +222,14 @@ class TaskManager(QMainWindow):
             if widget:
                 widget.deleteLater()
         
+        # Header level
         header_level = QHBoxLayout()
 
+        # Left Column (Header level)
         header_left_column = QVBoxLayout()
         header_left_column.setAlignment(Qt.AlignLeft)
 
-
-
-        self.header_label = QLabel("Welcome", self)
+        self.header_label = QLabel(f"Welcome", self)
         self.header_label.setAlignment(Qt.AlignLeft)
         self.header_label.setStyleSheet("font-size: 24px; font-weight: bold;")
         header_left_column.addWidget(self.header_label)
@@ -241,8 +243,7 @@ class TaskManager(QMainWindow):
         if avatar_path:
             pixmap = QPixmap(avatar_path).scaled(100, 100, Qt.KeepAspectRatio, Qt.SmoothTransformation)
             self.username_button.setIcon(QIcon(pixmap))
-            #self.username_button.setText(self.selections["username"])
-            #self.username_button.setToolButtonStyle(Qt.ToolButtonTextBesideIcon)
+
         else:
             self.username_button.setIcon(QIcon(r"D:\HecberryStuff\Dev\photo.png"))
         self.username_button.setIconSize(QSize(50, 50))
@@ -251,7 +252,6 @@ class TaskManager(QMainWindow):
 
         menu = QMenu(self)
         menu.addAction(self.selections["username"], self.view_profile)
-        #menu.addAction("Profile", self.view_profile)
         menu.addAction("Settings", self.view_settings)
         menu.addAction("Logout", self.logout)
 
@@ -264,8 +264,10 @@ class TaskManager(QMainWindow):
         header_level.addLayout(header_right_column)
         header_level.addSpacerItem(QSpacerItem(20, 40, QSizePolicy.Expanding))
 
+        # First level 
         first_level = QHBoxLayout()
-        # Left Column
+        
+        # Left Column (First level)
         left_column = QVBoxLayout()
 
         project_group = QGroupBox("Project")
@@ -283,7 +285,7 @@ class TaskManager(QMainWindow):
 
         left_column.addWidget(project_group)
 
-        # Right Column is for tasks and other info
+        # Right Column (First level)
         right_column = QVBoxLayout()
 
         entity_group = QGroupBox("Entity")
@@ -305,8 +307,10 @@ class TaskManager(QMainWindow):
         first_level.addLayout(left_column)
         first_level.addLayout(right_column)
 
+        # Second level
         second_level = QHBoxLayout()
 
+        # Left Column (Second level)
         second_right_column = QVBoxLayout()
 
         tasks_group = QGroupBox("Tasks")
@@ -334,8 +338,16 @@ class TaskManager(QMainWindow):
         self.apply_stylesheet()
 
     def view_profile(self):
-        QMessageBox.information(self, "Profile", "Viewing profile...")
-    
+        try:
+            kitsu_url = self.selections.get("kitsu_url", "").rstrip("/api")
+            my_tasks_url = f"{kitsu_url}/my-tasks"
+
+            #print(my_tasks_url)
+            webbrowser.open(my_tasks_url)
+        except Exception as e:
+            QMessageBox.warning(self, "Error", f"Failed to open profile: {str(e)}")
+            return
+
     def view_settings(self):
         QMessageBox.information(self, "Settings", "Opening settings...")
 
