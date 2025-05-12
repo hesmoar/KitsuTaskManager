@@ -1,6 +1,7 @@
 import sys
 import os
 import webbrowser
+import subprocess
 
 from PySide6.QtWidgets import (
     QApplication, QMainWindow, QWidget, QVBoxLayout, QLabel, QPushButton,
@@ -11,9 +12,9 @@ from PySide6.QtWidgets import (
 )
 from PySide6.QtGui import QIcon, QPixmap, QFont, QColor, QPalette
 from PySide6.QtCore import Qt, QSize
-from kitsu_auth import connect_to_kitsu, set_env_variables, save_credentials, load_credentials, clear_credentials
+from kitsu_auth import connect_to_kitsu, load_credentials, clear_credentials
 from kitsu_utils import get_user_projects, get_user_tasks_for_project, get_preview_thumbnail, clean_up_thumbnails, get_user_avatar
-
+from software_utils import clean_up_temp_files
 
 class TaskManager(QMainWindow):
 
@@ -99,6 +100,18 @@ class TaskManager(QMainWindow):
         }
         QToolButton:hover {
             background-color: #007acc;
+        }
+
+        QMenu {
+            background-color: #2c2c2c;
+            color: #f0f0f0;
+            border: 1px solid #444;
+            padding: 6px;
+            border-radius: 4px;
+        }
+        QMenu::item:selected {
+            background-color: #007acc;
+            color: white;
         }
     """)
          
@@ -194,11 +207,42 @@ class TaskManager(QMainWindow):
         except Exception as e:
             QMessageBox.warning(self, "Login Failed", f"Login failed: {str(e)}")
 
+    def detect_installed_software(self):
+        self.software_availability = {
+            "Resolve": self.is_software_installed("Resolve.exe"),
+            "Krita": self.is_software_installed("krita.exe"),
+            "Nuke": self.is_software_installed("Nuke.exe"),
+        }
+
+    def is_software_installed(self, executable_name):
+        for path in os.environ["PATH"].split(os.pathsep):
+            executable_path = os.path.join(path, executable_name)
+            if os.path.exists(os.path.join(path, executable_name)):
+                return executable_path
+        print(f"{executable_name} not found in PATH. Searching common paths...")
+
+        common_paths = [
+            r"C:\Program Files",
+            r"C:\Program Files (x86)",
+            r"C:\Users\%USERNAME%\AppData\Local\Programs",
+        ]
+        for base_path in common_paths:
+            for root, dirs, files in os.walk(base_path):
+                if executable_name in files:
+                    executable_path = os.path.join(root, executable_name)
+                    print(f"Found {executable_name} in {root}")
+                    return executable_path
+                if root.count(os.sep) - base_path.count(os.sep) >= 2:
+                    del dirs[:]
+
+        print(f"{executable_name} not found in common paths. Skipping...")
+        return False
 
     def logout(self):
         clear_credentials()
         self.selections = {}
-        clean_up_thumbnails()
+        clean_up_temp_files()
+        #clean_up_thumbnails()
         QMessageBox.information(self, "Logout", "You have been logged out.")
         
         self.setGeometry(50, 50, 400, 300)
@@ -336,6 +380,7 @@ class TaskManager(QMainWindow):
         main_layout.addLayout(second_level)
         
         self.apply_stylesheet()
+        self.detect_installed_software()
 
     def view_profile(self):
         try:
@@ -378,12 +423,15 @@ class TaskManager(QMainWindow):
         task_name_label.setStyleSheet("font-weight: bold;")
         task_date_label = QLabel(due_date)
         task_date_label.setStyleSheet("font-size: 12px;")
+        task_status_title_label = QLabel("Status:")
+        task_status_title_label.setStyleSheet("font-weight: bold;")
         task_status_label = QLabel(status)
         task_status_label.setStyleSheet("font-size: 12px;")
         text_layout_left.addWidget(task_preview_icon_button)
         text_layout_right.addWidget(task_entity_name_label)
         text_layout_right.addWidget(task_name_label)
         text_layout_right.addWidget(task_date_label)
+        text_layout_right.addWidget(task_status_title_label)
         text_layout_right.addWidget(task_status_label)
 
         task_layout.addLayout(text_layout_left)
@@ -394,21 +442,35 @@ class TaskManager(QMainWindow):
         task_item.setSizeHint(task_widget.sizeHint())
         self.tasks_list.addItem(task_item)
         self.tasks_list.setItemWidget(task_item, task_widget)
+
+        task_item.setData(Qt.UserRole, {
+            "project_name": self.projects_list.currentItem().text(),
+            "task_type_name": task_type_name,
+            "due_date": due_date,
+            "status": status,
+            "entity_name": entity_name,
+            "task_id": id
+        })
     
 
 
     def on_project_selected(self, item):
         selected_project = item.text()
-        entities, self.task_details = get_user_tasks_for_project(self.selections["username"], selected_project)
+        entities, self.task_details, entities_type = get_user_tasks_for_project(self.selections["username"], selected_project)
+        entity_type_and_name = []
+        for i in range(len(entities)):
+            entity_type_and_name.append(f"{entities[i]} ({entities_type[i]})")
         self.entity_list.clear()
         self.tasks_list.clear()
 
-        self.entity_list.addItems(entities)
+        
+        self.entity_list.addItems(entity_type_and_name)
 
 
 
     def on_entity_selected(self, item):
-        selected_entity = item.text()
+        selected_entity = item.text().split(" (")[0]
+        #selected_entity = selected_entity.split(" (")[0]
         # Do something with the selected entity
         print(f"Selected entity: {selected_entity}")
 
@@ -426,22 +488,86 @@ class TaskManager(QMainWindow):
             id = task["task_id"]
             self.add_task_to_list(task_name, due_date, status, selected_entity, id)
     
+    def get_selected_task(self):
+        selected_item = self.tasks_list.currentItem()
+        print(f"Selected item: {selected_item.text()}")
+        if not selected_item:
+            QMessageBox.warning(self, "No Task Selected", "Please select a task to view details.")
+            return None
+        
+        task_data = selected_item.data(Qt.UserRole)
+        if task_data:
+            print(f"Task data: {task_data}")
+            return task_data
+        
+        QMessageBox.warning(self, " Task Not Found", "The selected task could not be found.")
+        return None
+        #if selected_item:
+        #    print(f"Selected item text: {selected_item.text()}")
+
+            #print(f"Selected task: {task_name}")
+        #    for task in self.task_details:
+        #        if task["task_type_name"] == task_name:
+        #            return task
+        #QMessageBox.warning(self, "No Task Selected", "Please select a task to view details.")
+        #return None
+    
+    def save_task_context(self, task):
+        context = {
+            "project_name": self.projects_list.currentItem().text(),
+            "task_id": task["task_id"],
+            "task_name": task["task_type_name"],
+            "due_date": task["due_date"],
+            "status": task["status"],
+            "entity_name": task["entity_name"],
+        }
+        return context
+    
     def contextMenuEvent(self, event):
         if self.tasks_list.underMouse():
             menu = QMenu(self)
 
             action_view_details = menu.addAction("View Details")
+            action_launch_software = menu.addMenu("Launch Software")
+            action_launch_resolve = action_launch_software.addAction("Launch Resolve")
+            action_launch_krita = action_launch_software.addAction("Launch Krita")
+            action_launch_nuke = action_launch_software.addAction("Launch Nuke")
+            action_launch_software.addSeparator()
 
-            action = menu.exec_(self.mapToGlobal(event.pos()))
+            action_launch_resolve.setEnabled(self.software_availability.get("Resolve") is not None)
+            action_launch_krita.setEnabled(self.software_availability.get("Krita") is not None)
+            action_launch_nuke.setEnabled(self.software_availability.get("Nuke") is not None)
+
+            action = menu.exec(self.mapToGlobal(event.pos()))
 
             if action == action_view_details:
                 self.view_task_details()
+            elif action == action_launch_resolve:
+                from software_utils import launch_resolve
+                selected_task = self.get_selected_task()
+                if selected_task:
+                    self.save_task_context(selected_task)
+                    launch_resolve(self.software_availability["Resolve"], selected_task)
+            elif action == action_launch_krita:
+                from software_utils import launch_krita
+                selected_task = self.get_selected_task()
+                if selected_task:
+                    self.save_task_context(selected_task)
+                    launch_krita(self.software_availability["Krita"])
+            elif action == action_launch_nuke:
+                from software_utils import launch_nuke
+                selected_task = self.get_selected_task()
+                if selected_task:
+                    self.save_task_context(selected_task)
+                    launch_nuke(self.software_availability["Nuke"])
     
     def view_task_details(self):
         selected_items = self.tasks_list.currentItem()
         if selected_items:
             selected_task = selected_items[0].text()
             QMessageBox.information(self, "Task Details", f"Details for task: {selected_task}")
+    
+
 
 
 
