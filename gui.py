@@ -247,7 +247,9 @@ class TaskManager(QMainWindow):
         
         self.setGeometry(50, 50, 400, 300)
         self.show_login_screen()
-
+    
+    def unpack_projects(self):
+        project_names, project_dict = get_user_projects()
 
     def update_ui_with_kitsu(self):
 
@@ -529,9 +531,13 @@ class TaskManager(QMainWindow):
 
             action_view_details = menu.addAction("View Details")
             action_launch_software = menu.addMenu("Launch Software")
+            action_launch_software.setIcon(QIcon(r"D:\HecberryStuff\Dev\photo.png"))
             action_launch_resolve = action_launch_software.addAction("Launch Resolve")
+            action_launch_resolve.setIcon(QIcon(r"D:\HecberryStuff\Dev\BetweenStudiosTools\Editorial_Tools\TaskManager\icons\DaVinci_Resolve_Logo.png"))
             action_launch_krita = action_launch_software.addAction("Launch Krita")
+            action_launch_krita.setIcon(QIcon(r"D:\HecberryStuff\Dev\BetweenStudiosTools\Editorial_Tools\TaskManager\icons\kritaicon.ico"))
             action_launch_nuke = action_launch_software.addAction("Launch Nuke")
+            action_launch_nuke.setIcon(QIcon(r"D:\HecberryStuff\Dev\BetweenStudiosTools\Editorial_Tools\TaskManager\icons\NukeLogo.png"))
             action_launch_software.addSeparator()
 
             action_launch_resolve.setEnabled(self.software_availability.get("Resolve") is not None)

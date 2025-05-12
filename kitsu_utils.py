@@ -7,12 +7,16 @@ import shutil
 
 def get_user_projects():
     project_names = []
+    projects ={}
     user_active_projects = gazu.user.all_open_projects()
     print("User active projects: ")
     #pprint.pprint(user_active_projects)
     for project in user_active_projects:
         print(f"Project Name: {project["name"]}")
+        print(f"Project ID: {project["id"]}")
         project_names.append(project["name"])
+        projects[project["name"]] = project["id"]
+    pprint.pprint(projects)
     return project_names
 
 def get_user_tasks_for_project(user_email, project_name):
