@@ -21,7 +21,10 @@ class TaskManager(QMainWindow):
 
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("Task Manager")
+        self.setWindowTitle("Kitsu Task Manager")
+
+        icon_path = r"D:\HecberryStuff\Dev\BetweenStudiosTools\Editorial_Tools\TaskManager\icons\KitsuTaskManagerIcon.ico"
+        self.setWindowIcon(QIcon(icon_path))
         self.setGeometry(50, 50, 400, 300)
 
         stored_credentials = load_credentials()
@@ -531,13 +534,13 @@ class TaskManager(QMainWindow):
 
             action_view_details = menu.addAction("View Details")
             action_launch_software = menu.addMenu("Launch Software")
-            action_launch_software.setIcon(QIcon(r"D:\HecberryStuff\Dev\photo.png"))
+            action_launch_software.setIcon(QIcon(r"D:\HecberryStuff\Dev\BetweenStudiosTools\Editorial_Tools\TaskManager\icons\PhotoIcon.ico"))
             action_launch_resolve = action_launch_software.addAction("Launch Resolve")
-            action_launch_resolve.setIcon(QIcon(r"D:\HecberryStuff\Dev\BetweenStudiosTools\Editorial_Tools\TaskManager\icons\DaVinci_Resolve_Logo.png"))
+            action_launch_resolve.setIcon(QIcon(r"D:\HecberryStuff\Dev\BetweenStudiosTools\Editorial_Tools\TaskManager\icons\DaVinci_Resolve_Icon.ico"))
             action_launch_krita = action_launch_software.addAction("Launch Krita")
             action_launch_krita.setIcon(QIcon(r"D:\HecberryStuff\Dev\BetweenStudiosTools\Editorial_Tools\TaskManager\icons\kritaicon.ico"))
             action_launch_nuke = action_launch_software.addAction("Launch Nuke")
-            action_launch_nuke.setIcon(QIcon(r"D:\HecberryStuff\Dev\BetweenStudiosTools\Editorial_Tools\TaskManager\icons\NukeLogo.png"))
+            action_launch_nuke.setIcon(QIcon(r"D:\HecberryStuff\Dev\BetweenStudiosTools\Editorial_Tools\TaskManager\icons\NukeIcon.ico"))
             action_launch_software.addSeparator()
 
             action_launch_resolve.setEnabled(self.software_availability.get("Resolve") is not None)
@@ -580,6 +583,7 @@ class TaskManager(QMainWindow):
 
 def run_gui():
     app = QApplication(sys.argv)
+    app.setWindowIcon(QIcon(r"D:\HecberryStuff\Dev\BetweenStudiosTools\Editorial_Tools\TaskManager\icons\KitsuIcon.ico"))
     app.setFont(QFont("Segoe UI", 10))
     window = TaskManager()
     window.show()
