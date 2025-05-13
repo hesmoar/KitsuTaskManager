@@ -533,19 +533,27 @@ class TaskManager(QMainWindow):
             menu = QMenu(self)
 
             action_view_details = menu.addAction("View Details")
+
             action_launch_software = menu.addMenu("Launch Software")
             action_launch_software.setIcon(QIcon(r"D:\HecberryStuff\Dev\BetweenStudiosTools\Editorial_Tools\TaskManager\icons\PhotoIcon.ico"))
-            action_launch_resolve = action_launch_software.addAction("Launch Resolve")
-            action_launch_resolve.setIcon(QIcon(r"D:\HecberryStuff\Dev\BetweenStudiosTools\Editorial_Tools\TaskManager\icons\DaVinci_Resolve_Icon.ico"))
-            action_launch_krita = action_launch_software.addAction("Launch Krita")
-            action_launch_krita.setIcon(QIcon(r"D:\HecberryStuff\Dev\BetweenStudiosTools\Editorial_Tools\TaskManager\icons\kritaicon.ico"))
-            action_launch_nuke = action_launch_software.addAction("Launch Nuke")
-            action_launch_nuke.setIcon(QIcon(r"D:\HecberryStuff\Dev\BetweenStudiosTools\Editorial_Tools\TaskManager\icons\NukeIcon.ico"))
+            
+            if self.software_availability.get("Resolve"):
+                action_launch_resolve = action_launch_software.addAction("Launch Resolve")
+                action_launch_resolve.setIcon(QIcon(r"D:\HecberryStuff\Dev\BetweenStudiosTools\Editorial_Tools\TaskManager\icons\DaVinci_Resolve_Icon.ico"))
+            
+            if self.software_availability.get("Krita"):
+                action_launch_krita = action_launch_software.addAction("Launch Krita")
+                action_launch_krita.setIcon(QIcon(r"D:\HecberryStuff\Dev\BetweenStudiosTools\Editorial_Tools\TaskManager\icons\kritaicon.ico"))
+            
+            if self.software_availability.get("Nuke"):
+                action_launch_nuke = action_launch_software.addAction("Launch Nuke")
+                action_launch_nuke.setIcon(QIcon(r"D:\HecberryStuff\Dev\BetweenStudiosTools\Editorial_Tools\TaskManager\icons\NukeIcon.ico"))
+                action_launch_nuke.setEnabled(True)
             action_launch_software.addSeparator()
 
-            action_launch_resolve.setEnabled(self.software_availability.get("Resolve") is not None)
-            action_launch_krita.setEnabled(self.software_availability.get("Krita") is not None)
-            action_launch_nuke.setEnabled(self.software_availability.get("Nuke") is not None)
+            #action_launch_resolve.setEnabled(self.software_availability.get("Resolve") is not None)
+            #action_launch_krita.setEnabled(self.software_availability.get("Krita") is not None)
+            #action_launch_nuke.setEnabled(self.software_availability.get("Nuke") is not None)
 
             action = menu.exec(self.mapToGlobal(event.pos()))
 
