@@ -13,7 +13,7 @@ from PySide6.QtWidgets import (
 from PySide6.QtGui import QIcon, QPixmap, QFont, QColor, QPalette
 from PySide6.QtCore import Qt, QSize
 from kitsu_auth import connect_to_kitsu, load_credentials, clear_credentials
-from kitsu_utils import get_user_projects, get_user_tasks_for_project, get_preview_thumbnail, clean_up_thumbnails, get_user_avatar
+from kitsu_utils import get_user_projects, get_user_tasks_for_project, get_preview_thumbnail, clean_up_thumbnails, get_user_avatar, get_project_short_name, get_task_short_name
 from software_utils import clean_up_temp_files
 
 class TaskManager(QMainWindow):
@@ -401,7 +401,7 @@ class TaskManager(QMainWindow):
     def view_settings(self):
         QMessageBox.information(self, "Settings", "Opening settings...")
 
-    def add_task_to_list(self, task_type_name, due_date, status, entity_name, id):
+    def add_task_to_list(self, task_type_name, due_date, status, entity_name, id, project_code, task_code, entity_type_name):
         # Create a custom widget for the task
         task_widget = QWidget()
         task_layout = QHBoxLayout(task_widget)
@@ -454,7 +454,10 @@ class TaskManager(QMainWindow):
             "due_date": due_date,
             "status": status,
             "entity_name": entity_name,
-            "task_id": id
+            "task_id": id,
+            "project_code": get_project_short_name(self.projects_list.currentItem().text()),
+            "task_code": get_task_short_name(id),
+            "entity_type_name": entity_type_name
         })
     
 
@@ -475,6 +478,7 @@ class TaskManager(QMainWindow):
 
     def on_entity_selected(self, item):
         selected_entity = item.text().split(" (")[0]
+        selected_entity_type = item.text().split("(")[1]
         #selected_entity = selected_entity.split(" (")[0]
         # Do something with the selected entity
         print(f"Selected entity: {selected_entity}")
@@ -488,10 +492,13 @@ class TaskManager(QMainWindow):
 
         for task in filtered_tasks:
             task_name = task["task_type_name"]
+            task_code = task["task_code"]
+            project_code = task["project_code"]
             due_date = task["due_date"]
             status = task["status"]
             id = task["task_id"]
-            self.add_task_to_list(task_name, due_date, status, selected_entity, id)
+            entity_type_name = task["entity_type_name"]
+            self.add_task_to_list(task_name, due_date, status, selected_entity, id, project_code, task_code, entity_type_name)
     
     def get_selected_task(self):
         selected_item = self.tasks_list.currentItem()
@@ -525,6 +532,9 @@ class TaskManager(QMainWindow):
             "due_date": task["due_date"],
             "status": task["status"],
             "entity_name": task["entity_name"],
+            "project_code": task["project_code"],
+            "task_code": task["task_code"],
+            "entity_type": task["entity_type_name"]
         }
         return context
     

@@ -5,6 +5,7 @@ import tempfile
 import shutil
 
 
+
 def get_user_projects():
     project_names = []
     projects ={}
@@ -19,6 +20,21 @@ def get_user_projects():
     pprint.pprint(projects)
     return project_names
 
+def get_project_short_name(project):
+    project_dict = gazu.project.get_project_by_name(project)
+
+    project_shortname = project_dict.get("code")
+
+    return project_shortname
+
+def get_task_short_name(task_id):
+    task_dict = gazu.task.get_task(task_id)
+
+    task_short_name = task_dict["task_type"].get("short_name")
+
+    return task_short_name
+
+
 def get_user_tasks_for_project(user_email, project_name):
     person = gazu.person.get_person_by_email(user_email)
     tasks = gazu.task.all_tasks_for_person(person)
@@ -28,7 +44,8 @@ def get_user_tasks_for_project(user_email, project_name):
 
     for task in tasks:
         if task["project_name"] == project_name:
-            #pprint.pprint(task)
+            print("This is a task")
+            pprint.pprint(task)
             if task["entity_name"] not in entity_names:
                 entity_names.append(task["entity_name"])
                 entity_types.append(task["entity_type_name"])
@@ -39,7 +56,9 @@ def get_user_tasks_for_project(user_email, project_name):
                 "due_date": task["due_date"],
                 "status": task["task_status_short_name"],
                 "entity_type_name": task["entity_type_name"],
-                "task_id": task["id"]
+                "task_id": task["id"],
+                "task_code": get_task_short_name(task["id"]),
+                "project_code": get_project_short_name(task["project_name"])
             })
 
 
