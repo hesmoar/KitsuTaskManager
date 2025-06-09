@@ -18,9 +18,9 @@ def launch_resolve(software_path, task_context):
 
         #setup_resolve()
     except FileNotFoundError:
-        QMessageBox.warning(f"Error: {software_path} not found. Please check the path.")
+        QMessageBox.warning(None, "Error", f"Error: {software_path} not found. Please check the path.")
     except Exception as e:
-        QMessageBox.warning(f"Error Failed to launch software:{e}")
+        QMessageBox.warning(None, "Error", f"Error Failed to launch software: {e}")
 
 def launch_krita(software_path):
     print("Launching Krita...")
@@ -29,9 +29,9 @@ def launch_krita(software_path):
         subprocess.Popen([software_path])
         create_context_file()
     except FileNotFoundError:
-        QMessageBox.warning(f"Error: {software_path} not found. Please check the path.")
+        QMessageBox.warning(None, "Error", f"Error: {software_path} not found. Please check the path.")
     except Exception as e:
-        QMessageBox.warning(f"Error Failed to launch software:{e}")
+        QMessageBox.warning(None, "Error", f"Error Failed to launch software: {e}")
 
 def launch_nuke(software_path):
     print("Launching Nuke...")

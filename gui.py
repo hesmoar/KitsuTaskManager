@@ -547,6 +547,7 @@ class TaskManager(QMainWindow):
             action_launch_software = menu.addMenu("Launch Software")
             action_launch_software.setIcon(QIcon(r"D:\HecberryStuff\Dev\BetweenStudiosTools\Editorial_Tools\TaskManager\icons\PhotoIcon.ico"))
             
+            action_launch_resolve = None
             if self.software_availability.get("Resolve"):
                 action_launch_resolve = action_launch_software.addAction("Launch Resolve")
                 action_launch_resolve.setIcon(QIcon(r"D:\HecberryStuff\Dev\BetweenStudiosTools\Editorial_Tools\TaskManager\icons\DaVinci_Resolve_Icon.ico"))
