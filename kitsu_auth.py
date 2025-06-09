@@ -2,6 +2,7 @@ import gazu
 import os
 import keyring
 
+# adding to cursor test branch
 #kitsu_url = os.getenv("KITSU_URL")
 #kitsu_email = os.getenv("KITSU_EMAIL")
 #kitsu_password = os.getenv("KITSU_PASSWORD")
