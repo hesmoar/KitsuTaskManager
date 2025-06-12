@@ -12,9 +12,12 @@ from PySide6.QtWidgets import (
 )
 from PySide6.QtGui import QIcon, QPixmap, QFont, QColor, QPalette
 from PySide6.QtCore import Qt, QSize
-from kitsu_auth import connect_to_kitsu, load_credentials, clear_credentials
-from kitsu_utils import get_user_projects, get_user_tasks_for_project, get_preview_thumbnail, clean_up_thumbnails, get_user_avatar, get_project_short_name, get_task_short_name
-from software_utils import clean_up_temp_files
+from KitsuHomeStudioTools.kitsu_home_studio.shared.kitsu_auth import connect_to_kitsu, load_credentials, clear_credentials
+from KitsuHomeStudioTools.kitsu_home_studio.task_manager.kitsu_utils import get_user_projects, get_user_tasks_for_project, get_preview_thumbnail, clean_up_thumbnails, get_user_avatar, get_project_short_name, get_task_short_name
+from KitsuHomeStudioTools.kitsu_home_studio.task_manager.software_utils import clean_up_temp_files, print_context_from_json
+
+# Get the directory of the current script
+current_dir = os.path.dirname(os.path.abspath(__file__))
 
 class TaskManager(QMainWindow):
 
@@ -23,7 +26,7 @@ class TaskManager(QMainWindow):
         super().__init__()
         self.setWindowTitle("Kitsu Task Manager")
 
-        icon_path = r"D:\HecberryStuff\Dev\BetweenStudiosTools\Editorial_Tools\TaskManager\icons\KitsuTaskManagerIcon.ico"
+        icon_path = os.path.join(current_dir, "icons", "KitsuTaskManagerIcon.ico")
         self.setWindowIcon(QIcon(icon_path))
         self.setGeometry(50, 50, 400, 300)
 
@@ -257,7 +260,7 @@ class TaskManager(QMainWindow):
     def update_ui_with_kitsu(self):
 
         # Main Window
-        self.setGeometry(100, 100, 800, 600)
+        self.setGeometry(100, 100, 800, 700)
 
         central_widget = QWidget(self)
         self.setCentralWidget(central_widget)
@@ -294,7 +297,7 @@ class TaskManager(QMainWindow):
             self.username_button.setIcon(QIcon(pixmap))
 
         else:
-            self.username_button.setIcon(QIcon(r"D:\HecberryStuff\Dev\photo.png"))
+            self.username_button.setIcon(QIcon(os.path.join(current_dir, "icons", "photo.png")))
         self.username_button.setIconSize(QSize(50, 50))
         #self.username_button.setFixedSize(150, 150)
 
@@ -309,9 +312,8 @@ class TaskManager(QMainWindow):
         header_right_column.addWidget(self.username_button)
 
         header_level.addLayout(header_left_column)
-        header_level.addSpacerItem(QSpacerItem(20, 40, QSizePolicy.Expanding))
+        header_level.addStretch()
         header_level.addLayout(header_right_column)
-        header_level.addSpacerItem(QSpacerItem(20, 40, QSizePolicy.Expanding))
 
         # First level 
         first_level = QHBoxLayout()
@@ -380,9 +382,9 @@ class TaskManager(QMainWindow):
 
 
         main_layout.addLayout(header_level)
-        main_layout.addSpacerItem(QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding))
         main_layout.addLayout(first_level)
         main_layout.addLayout(second_level)
+        main_layout.addSpacerItem(QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding))
         
         self.apply_stylesheet()
         self.detect_installed_software()
@@ -400,6 +402,8 @@ class TaskManager(QMainWindow):
 
     def view_settings(self):
         QMessageBox.information(self, "Settings", "Opening settings...")
+
+        webbrowser.open("https://google.com")
 
     def add_task_to_list(self, task_type_name, due_date, status, entity_name, id, project_code, task_code, entity_type_name):
         # Create a custom widget for the task
@@ -545,20 +549,20 @@ class TaskManager(QMainWindow):
             action_view_details = menu.addAction("View Details")
 
             action_launch_software = menu.addMenu("Launch Software")
-            action_launch_software.setIcon(QIcon(r"D:\HecberryStuff\Dev\BetweenStudiosTools\Editorial_Tools\TaskManager\icons\PhotoIcon.ico"))
+            action_launch_software.setIcon(QIcon(os.path.join(current_dir, "icons", "PhotoIcon.ico")))
             
             action_launch_resolve = None
             if self.software_availability.get("Resolve"):
                 action_launch_resolve = action_launch_software.addAction("Launch Resolve")
-                action_launch_resolve.setIcon(QIcon(r"D:\HecberryStuff\Dev\BetweenStudiosTools\Editorial_Tools\TaskManager\icons\DaVinci_Resolve_Icon.ico"))
+                action_launch_resolve.setIcon(QIcon(os.path.join(current_dir, "icons", "DaVinci_Resolve_Icon.ico")))
             
             if self.software_availability.get("Krita"):
                 action_launch_krita = action_launch_software.addAction("Launch Krita")
-                action_launch_krita.setIcon(QIcon(r"D:\HecberryStuff\Dev\BetweenStudiosTools\Editorial_Tools\TaskManager\icons\kritaicon.ico"))
+                action_launch_krita.setIcon(QIcon(os.path.join(current_dir, "icons", "kritaicon.ico")))
             
             if self.software_availability.get("Nuke"):
                 action_launch_nuke = action_launch_software.addAction("Launch Nuke")
-                action_launch_nuke.setIcon(QIcon(r"D:\HecberryStuff\Dev\BetweenStudiosTools\Editorial_Tools\TaskManager\icons\NukeIcon.ico"))
+                action_launch_nuke.setIcon(QIcon(os.path.join(current_dir, "icons", "NukeIcon.ico")))
                 action_launch_nuke.setEnabled(True)
             action_launch_software.addSeparator()
 
@@ -568,6 +572,8 @@ class TaskManager(QMainWindow):
 
             action = menu.exec(self.mapToGlobal(event.pos()))
 
+            if action is None:
+                return
             if action == action_view_details:
                 self.view_task_details()
             elif action == action_launch_resolve:
@@ -581,13 +587,14 @@ class TaskManager(QMainWindow):
                 selected_task = self.get_selected_task()
                 if selected_task:
                     self.save_task_context(selected_task)
-                    launch_krita(self.software_availability["Krita"])
+                    launch_krita(self.software_availability["Krita"], selected_task)
+                    print_context_from_json()
             elif action == action_launch_nuke:
                 from software_utils import launch_nuke
                 selected_task = self.get_selected_task()
                 if selected_task:
                     self.save_task_context(selected_task)
-                    launch_nuke(self.software_availability["Nuke"])
+                    launch_nuke(self.software_availability["Nuke"], selected_task)
     
     def view_task_details(self):
         selected_items = self.tasks_list.currentItem()
@@ -602,7 +609,7 @@ class TaskManager(QMainWindow):
 
 def run_gui():
     app = QApplication(sys.argv)
-    app.setWindowIcon(QIcon(r"D:\HecberryStuff\Dev\BetweenStudiosTools\Editorial_Tools\TaskManager\icons\KitsuIcon.ico"))
+    app.setWindowIcon(QIcon(os.path.join(current_dir, "icons", "KitsuIcon.ico")))
     app.setFont(QFont("Segoe UI", 10))
     window = TaskManager()
     window.show()

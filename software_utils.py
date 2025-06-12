@@ -6,6 +6,7 @@ import time
 import tempfile
 import shutil
 import json
+import pprint
 
 def launch_resolve(software_path, task_context):
     print("Launching DaVinci Resolve...")
@@ -22,12 +23,12 @@ def launch_resolve(software_path, task_context):
     except Exception as e:
         QMessageBox.warning(None, "Error", f"Error Failed to launch software: {e}")
 
-def launch_krita(software_path):
+def launch_krita(software_path, task_context):
     print("Launching Krita...")
     try:
         #subprocess.Popen([r"C:\Program Files\Krita (x64)\bin\krita.exe"])
         subprocess.Popen([software_path])
-        create_context_file()
+        create_context_file(task_context)
     except FileNotFoundError:
         QMessageBox.warning(None, "Error", f"Error: {software_path} not found. Please check the path.")
     except Exception as e:
@@ -51,3 +52,10 @@ def clean_up_temp_files():
     temp_dir = os.path.join(tempfile.gettempdir(), "KitsuTaskManager")
     if os.path.exists(temp_dir):
         shutil.rmtree(temp_dir)
+
+def print_context_from_json():
+    from KitsuHomeStudioTools.kitsu_home_studio.editorial_publisher.kitsu_project_context import get_context_from_json
+    from KitsuHomeStudioTools.kitsu_home_studio.editorial_publisher.kitsu_project_context import file_path
+    context_data = get_context_from_json(file_path)
+    print("Calling print_context_from_json")
+    pprint.pprint(context_data)
